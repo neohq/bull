@@ -206,6 +206,23 @@ describe('Queue', () => {
       return queue.close();
     });
 
+    it('creates a queue using the supplied redis url as opts', () => {
+      const queue = new Queue('custom', {
+        redis: 'redis://abc:123@127.2.3.4:1234/1'
+      });
+
+      expect(queue.client.options.host).to.be.eql('127.2.3.4');
+      expect(queue.eclient.options.host).to.be.eql('127.2.3.4');
+
+      expect(queue.client.options.port).to.be.eql(1234);
+      expect(queue.eclient.options.port).to.be.eql(1234);
+
+      expect(queue.client.options.db).to.be.eql(1);
+      expect(queue.eclient.options.db).to.be.eql(1);
+
+      return queue.close();
+    });
+
     it('creates a queue using the supplied redis host', () => {
       const queue = new Queue('custom', { redis: { host: 'localhost' } });
 
@@ -1080,6 +1097,186 @@ describe('Queue', () => {
       }
     });
 
+    describe('when job has been added again', () => {
+      it('emits global duplicated event', async () => {
+        queue.process(
+          async () => {
+            await delay(50);
+            await queue.add({ foo: 'bar' }, { jobId: 'a1' });
+            await delay(50);
+          }
+        );
+  
+        await queue.add({ foo: 'bar' }, { jobId: 'a1' });
+    
+        await new Promise(resolve => {
+          queue.once('global:duplicated', (jobId) => {
+            expect(jobId).to.be.equal('a1');
+            resolve();
+          });
+        });
+      });
+
+      it('emits duplicated event', async () => {
+        queue.process(
+          async () => {
+            await delay(50);
+            await queue.add({ foo: 'bar' }, { jobId: 'a1' });
+            await delay(50);
+          }
+        );
+  
+        await queue.add({ foo: 'bar' }, { jobId: 'a1' });
+    
+        await new Promise(resolve => {
+          queue.once('duplicated', (jobId) => {
+            expect(jobId).to.be.equal('a1');
+            resolve();
+          });
+        });
+      });
+    });
+
+    describe('when job is debounced when added again with same debounce id', () => {
+      describe('when ttl is provided', () => {
+        it('used a fixed time period and emits debounced event', async () => {
+          const job = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+  
+          let debouncedCounter = 0;
+          let secondJob = null;
+          queue.on('debounced', (jobId) => {
+            if (debouncedCounter > 1) {
+              expect(jobId).to.be.equal(secondJob.id);
+            } else {
+              expect(jobId).to.be.equal(job.id);
+            }
+            debouncedCounter++;
+          });
+  
+          await delay(1000);
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(1100);
+          secondJob = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(100);
+  
+          expect(debouncedCounter).to.be.equal(4);
+        });
+      });
+
+      describe('when removing debounced job',  () => {
+        it('removes debounce key', async ()=> {
+          const job = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+
+          let debouncedCounter = 0;
+          queue.on('debounced', () => {
+            debouncedCounter++;
+          });
+          await job.remove();
+
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(1000);
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(1100);
+          const secondJob = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await secondJob.remove();
+
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1', ttl: 2000 } },
+          );
+          await delay(100);
+
+          expect(debouncedCounter).to.be.equal(2);
+        });
+      });
+
+      describe('when ttl is not provided',  ()=> {
+        it('waits until job is finished before removing debounce key', async  ()=> {
+          queue.process(
+            async () => {
+              await delay(100);
+              await queue.add(
+                { foo: 'bar' },
+                { debounce: { id: 'a1' } },
+              );
+              await delay(100);
+              await queue.add(
+                { foo: 'bar' },
+                { debounce: { id: 'a1' } },
+              );
+              await delay(100);
+            }
+          );
+      
+          let debouncedCounter = 0;
+  
+          const completing = new Promise(resolve => {
+            queue.once('completed', ({ id }) => {
+              expect(id).to.be.equal('1');
+              resolve();
+            });
+  
+            queue.on('debounced', () => {
+              debouncedCounter++;
+            });
+          });
+    
+          await queue.add({ foo: 'bar' }, { debounce: { id: 'a1' } });
+  
+          await completing;
+  
+          const secondJob = await queue.add(
+            { foo: 'bar' },
+            { debounce: { id: 'a1' } },
+          );
+  
+          const count = await queue.getJobCountByTypes();
+  
+          expect(count).to.be.eql(2);
+  
+          expect(debouncedCounter).to.be.equal(2);
+          expect(secondJob.id).to.be.equal('4');
+        });
+      });  
+    });
+
     it('process a job that updates progress', done => {
       queue.process((job, jobDone) => {
         expect(job.data.foo).to.be.equal('bar');
@@ -1715,6 +1912,46 @@ describe('Queue', () => {
 
       queue2
         .add({ foo: 'bar' })
+        .then(job => {
+          expect(job.id).to.be.ok;
+          expect(job.data.foo).to.be.eql('bar');
+        })
+        .catch(done);
+    });
+
+    it('removes failed stalled jobs that stall more than allowable stalled limit when removeOnFail is present', function(done) {
+      const FAILED_MESSAGE = 'job stalled more than allowable limit';
+      this.timeout(10000);
+
+      const queue2 = utils.buildQueue('running-stalled-job-' + uuid.v4(), {
+        settings: {
+          lockRenewTime: 2500,
+          lockDuration: 250,
+          stalledInterval: 500,
+          maxStalledCount: 1
+        }
+      });
+
+      let processedCount = 0;
+      queue2.process(job => {
+        processedCount++;
+        expect(job.data.foo).to.be.equal('bar');
+        return delay(1500);
+      });
+
+      queue2.on('completed', () => {
+        done(new Error('should not complete'));
+      });
+
+      queue2.on('failed', (job, err) => {
+        expect(processedCount).to.be.eql(2);
+        expect(job).to.be.null;
+        expect(err.message).to.be.eql(FAILED_MESSAGE);
+        done();
+      });
+
+      queue2
+        .add({ foo: 'bar' }, { removeOnFail: true })
         .then(job => {
           expect(job.id).to.be.ok;
           expect(job.data.foo).to.be.eql('bar');
@@ -2434,6 +2671,60 @@ describe('Queue', () => {
       });
       queue.on('completed', () => {
         done();
+      });
+    });
+
+    describe('when job has more priority than delayed jobs', () => {
+      it('executes retried job first', done => {
+        queue = utils.buildQueue('test retries and priority');
+        let id = 0;
+        queue.isReady().then(() => {
+          queue.process(async job => {
+            await delay(200);
+            if (job.attemptsMade === 0) {
+              id++;
+              expect(job.id).to.be.eql(`${id}`);
+            }
+            if (job.id == '1' && job.attemptsMade < 1) {
+              throw new Error('Not yet!');
+            }
+          });
+
+          queue.add(
+            { foo: 'bar' },
+            {
+              attempts: 2,
+              priority: 1
+            }
+          );
+          queue.add(
+            {},
+            {
+              delay: 200,
+              priority: 2
+            }
+          );
+          queue.add(
+            {},
+            {
+              delay: 200,
+              priority: 2
+            }
+          );
+          queue.add(
+            {},
+            {
+              delay: 200,
+              priority: 2
+            }
+          );
+        });
+        let count = 0;
+        queue.on('completed', () => {
+          if (count++ === 3) {
+            done();
+          }
+        });
       });
     });
 

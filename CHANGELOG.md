@@ -1,3 +1,127 @@
+# [4.16.0](https://github.com/OptimalBits/bull/compare/v4.15.1...v4.16.0) (2024-07-30)
+
+
+### Features
+
+* **job:** support debouncing ([#2760](https://github.com/OptimalBits/bull/issues/2760)) ([603befe](https://github.com/OptimalBits/bull/commit/603befe439fb4e318137b88550ab4d0c6c2bbcb3))
+
+## [4.15.1](https://github.com/OptimalBits/bull/compare/v4.15.0...v4.15.1) (2024-07-04)
+
+
+### Bug Fixes
+
+* **job:** check jobKey when saving stacktrace ([#2755](https://github.com/OptimalBits/bull/issues/2755)) ([96675f5](https://github.com/OptimalBits/bull/commit/96675f51d1a9e5a30df0a0fe24a40a2d14078203))
+
+# [4.15.0](https://github.com/OptimalBits/bull/compare/v4.14.0...v4.15.0) (2024-06-30)
+
+
+### Features
+
+* **queue:** emit internal duplicated event ([#2754](https://github.com/OptimalBits/bull/issues/2754)) ([021ab7f](https://github.com/OptimalBits/bull/commit/021ab7fd8d6c89b01767572b0e53422f34f7bc04))
+
+# [4.14.0](https://github.com/OptimalBits/bull/compare/v4.13.1...v4.14.0) (2024-06-25)
+
+
+### Features
+
+* **queue:** add global:duplicated event when a duplicated is added ([#2749](https://github.com/OptimalBits/bull/issues/2749)) ([d632ac1](https://github.com/OptimalBits/bull/commit/d632ac1010d7d7faaa8f731eafdea67d6129e111))
+
+## [4.13.1](https://github.com/OptimalBits/bull/compare/v4.13.0...v4.13.1) (2024-06-21)
+
+
+### Bug Fixes
+
+* **priority:** consider paused state when calling getCountsPerPriority ([#2748](https://github.com/OptimalBits/bull/issues/2748)) ([6c2719a](https://github.com/OptimalBits/bull/commit/6c2719a9292bf0a11136d575d333600be0b9a422))
+
+# [4.13.0](https://github.com/OptimalBits/bull/compare/v4.12.9...v4.13.0) (2024-06-12)
+
+
+### Features
+
+* **queue:** add getCountsPerPriority method ([#2746](https://github.com/OptimalBits/bull/issues/2746)) ([0376dcc](https://github.com/OptimalBits/bull/commit/0376dcc128d9af13ecbd658d8ea7ff19fce56915))
+
+## [4.12.9](https://github.com/OptimalBits/bull/compare/v4.12.8...v4.12.9) (2024-05-24)
+
+
+### Bug Fixes
+
+* **retry-job:** throw error when job is not in active state ([#2741](https://github.com/OptimalBits/bull/issues/2741)) ([c29e3b0](https://github.com/OptimalBits/bull/commit/c29e3b061a168c3d40a336a733c382bab14caa57))
+
+## [4.12.8](https://github.com/OptimalBits/bull/compare/v4.12.7...v4.12.8) (2024-05-22)
+
+
+### Bug Fixes
+
+* **move-to-finished:** throw error when job is not in active state ([#2739](https://github.com/OptimalBits/bull/issues/2739)) ([7b12be1](https://github.com/OptimalBits/bull/commit/7b12be13ea39e309d6a6a39a2e56f646f06fdfa8))
+
+## [4.12.7](https://github.com/OptimalBits/bull/compare/v4.12.6...v4.12.7) (2024-05-21)
+
+
+### Bug Fixes
+
+* **scripts:** throw error when moving non-active job to delayed ([#2740](https://github.com/OptimalBits/bull/issues/2740)) ([63636b1](https://github.com/OptimalBits/bull/commit/63636b181d0a166b1702059e5abb53ce1589d90f))
+
+## [4.12.6](https://github.com/OptimalBits/bull/compare/v4.12.5...v4.12.6) (2024-05-18)
+
+
+### Bug Fixes
+
+* **stalled:** take in count removeOnFail option ([#2734](https://github.com/OptimalBits/bull/issues/2734)) ([2112269](https://github.com/OptimalBits/bull/commit/21122697461b551055192ff3b9c02c6f37cb331e))
+
+## [4.12.5](https://github.com/OptimalBits/bull/compare/v4.12.4...v4.12.5) (2024-05-17)
+
+
+### Bug Fixes
+
+* **job:** validate job existence when adding log ([#2738](https://github.com/OptimalBits/bull/issues/2738)) ([1fb1562](https://github.com/OptimalBits/bull/commit/1fb15628dc5912e83220d430aa14e19e90d1cc53))
+
+## [4.12.4](https://github.com/OptimalBits/bull/compare/v4.12.3...v4.12.4) (2024-05-15)
+
+
+### Bug Fixes
+
+* **retry-job:** consider priority ([#2737](https://github.com/OptimalBits/bull/issues/2737)) fixes [#1755](https://github.com/OptimalBits/bull/issues/1755) ([09ce146](https://github.com/OptimalBits/bull/commit/09ce146563871519cda638bafa82ce6af34bdd25))
+
+## [4.12.3](https://github.com/OptimalBits/bull/compare/v4.12.2...v4.12.3) (2024-05-10)
+
+
+### Bug Fixes
+
+* **job:** validate jobKey in updateProgress and update ([#2730](https://github.com/OptimalBits/bull/issues/2730)) ([6d84156](https://github.com/OptimalBits/bull/commit/6d8415696606d3b7ec891f7fca9ab0508923c321))
+
+
+### Performance Improvements
+
+* **scripts:** remove token after moving to wait or delayed ([#2731](https://github.com/OptimalBits/bull/issues/2731)) ([7ee8f74](https://github.com/OptimalBits/bull/commit/7ee8f7430a68492c9ce768e7108443592f49d74c))
+
+## [4.12.2](https://github.com/OptimalBits/bull/compare/v4.12.1...v4.12.2) (2024-01-17)
+
+
+### Bug Fixes
+
+* **dependencies:** upgrade msgpackr ([cc83ae2](https://github.com/OptimalBits/bull/commit/cc83ae297e96344f94039401be5097d7f05ab10b))
+
+## [4.12.1](https://github.com/OptimalBits/bull/compare/v4.12.0...v4.12.1) (2024-01-15)
+
+
+### Bug Fixes
+
+* **deps:** bump msgpackr from 1.5.2 to 1.10.1 ([#2697](https://github.com/OptimalBits/bull/issues/2697)) ([b27c90d](https://github.com/OptimalBits/bull/commit/b27c90d8b106cc5319e712df2386ddc35946ec3d))
+
+# [4.12.0](https://github.com/OptimalBits/bull/compare/v4.11.5...v4.12.0) (2023-12-18)
+
+
+### Features
+
+* add missing extendLock definition ([14432ff](https://github.com/OptimalBits/bull/commit/14432ff8a5e743d97c82a360c9d6a92204b1a684))
+
+## [4.11.5](https://github.com/OptimalBits/bull/compare/v4.11.4...v4.11.5) (2023-11-11)
+
+
+### Bug Fixes
+
+* pass redis string as opts into queue ([e94f568](https://github.com/OptimalBits/bull/commit/e94f568085de079fc42b876233a060ba11ec946e))
+
 ## [4.11.4](https://github.com/OptimalBits/bull/compare/v4.11.3...v4.11.4) (2023-10-14)
 
 
